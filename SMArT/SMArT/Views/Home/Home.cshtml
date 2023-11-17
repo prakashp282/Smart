@@ -1,0 +1,147 @@
+﻿@using System.Web.Mvc.Html
+@model SMArT.Models.SearchModel
+@{
+    ViewBag.Title = "Home Page";
+}   
+
+@{
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<div class="loading">Loading&#8230;</div>
+<div class="form-horizontal">
+    <h3>Ticket distribution report based on services</h3>
+    @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+    <div class="form-group">
+        <div class="col-md-12">
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.UserName, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.EditorFor(m => m.UserName, new {htmlAttributes = new {@class = "form-control"}})
+            @Html.ValidationMessageFor(model => model.UserName, "", new {@class = "text-danger"})
+        </div>
+        @Html.LabelFor(model => model.Password, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.PasswordFor(m => m.Password, new {@class = "form-control"})
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.SelectedProject, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.DropDownListFor(m => m.SelectedProject, Model.Projects, new {@class = "form-control"})
+        </div>
+        @Html.LabelFor(model => model.SelectedIssueType, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.DropDownListFor(m => m.SelectedIssueType, Model.IssueTypes, new {@class = "form-control"})
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.StartDate, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.EditorFor(m => m.StartDate, new {htmlAttributes = new {@class = "form-control"}})
+        </div>
+        @Html.LabelFor(model => model.EndDate, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="col-md-4">
+            @Html.EditorFor(m => m.EndDate, new {htmlAttributes = new {@class = "form-control"}})
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-5 col-md-7">
+            <input id="btnGenerate" type="button" value="Generate" class="btn btn-default"/>
+            <input type="reset" value="Reset" class="btn btn-default"/>
+        </div>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <div class="col-md-12">
+        <div id="container" style="min-width: 400px; height: 500px; max-width: 600px; margin: 0 auto"></div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('.loading').hide();
+        $('input[type=datetime]').datepicker({
+            dateFormat: "dd-MM-yy",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "-60:+0"
+        });
+
+    });
+    $("#btnGenerate").click(function () {
+        getReport("/Home/ReportbyService", "Ticket distribution based on services");
+    });
+
+    $("#btnGenerateByCustomer").click(function () {
+        getReport("/Home/ReportbyService", "Ticket distribution based on customer");
+    });
+
+    function getReport(url, reportTitle) {
+        $('.loading').show();
+        var model = new Object();
+        model.UserName = $('#UserName').val();
+        model.Password = $('#Password').val();
+        model.SelectedProject = $("#SelectedProject").val();
+        model.SelectedIssueType = $("#SelectedIssueType").val();
+        model.StartDate = $("#StartDate").val();
+        model.EndDate = $("#EndDate").val();
+        if (model != null) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(model),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $('.loading').hide();
+                    if (response.Success) {
+                        generateReport(response.Object, reportTitle);
+                    }
+                },
+                failure: function (response) {
+                    $('.loading').hide();
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    $('.loading').hide();
+                    alert(response.responseText);
+                }
+            });
+        }
+    }
+
+    function generateReport(response, text) {
+        Highcharts.chart('container', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: text
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: response.series
+        });
+    }
+    
+</script>

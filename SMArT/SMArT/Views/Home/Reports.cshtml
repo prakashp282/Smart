@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = "Reports";
+}
+<h2>@ViewBag.Title.</h2>
+<div class="list-group">
+    @Html.ActionLink("Issue list by Services", "Home", "Home", null, htmlAttributes: new { @class = "list-group-item" })
+    @Html.ActionLink("Issue list by customers", "Index", "Report", null, htmlAttributes: new { @class = "list-group-item" })
+    @Html.ActionLink("Sprint trend analysis - Coming soon...", "#", "#", null, htmlAttributes: new { @class = "list-group-item" })
+    @Html.ActionLink("Track individual performance - Coming soon...", "#", "#", null, htmlAttributes: new { @class = "list-group-item" })
+    @Html.ActionLink("Track team performane - Coming soon...", "#", "#", null, htmlAttributes: new { @class = "list-group-item" })
+
+</div>
